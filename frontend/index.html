@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"><title>NCII Safety Check</title>
+  <style>
+    body{font-family:sans-serif;max-width:640px;margin:40px auto;padding:0 16px}
+    textarea{width:100%;height:100px;padding:8px}
+    button{padding:10px 20px;margin-top:10px;cursor:pointer}
+    #out{margin-top:20px;padding:16px;border-radius:8px;display:none}
+    .ALLOW{background:#d4edda}.REVIEW{background:#fff3cd}.BLOCK{background:#f8d7da}
+  </style>
+</head>
+<body>
+  <h2>Pre-Generation Safety Check</h2>
+  <textarea id="prompt" placeholder="Enter an image-generation prompt..."></textarea><br>
+  <label><input type="checkbox" id="consent"> User claims consent (logged only)</label><br>
+  <button onclick="check()">Check prompt</button>
+  <div id="out"></div>
+  <script>
+    async function check(){
+      const res = await fetch("/v1/safety/check",{
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({prompt:document.getElementById("prompt").value,
+                             consent_claimed:document.getElementById("consent").checked})});
+      const d = await res.json();
+      const out = document.getElementById("out");
+      out.className = d.decision; out.style.display="block";
+      out.innerHTML = `<b>${d.decision}</b> (score ${d.score})<br><small>${d.reasons.join("<br>")}</small>`;
+    }
+  </script>
+</body>
+</html>
